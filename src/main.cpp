@@ -64,14 +64,14 @@ void setup()
     SerialBT.begin("ESP32test"); // Bluetooth device name
     Serial.println("The device started, now you can pair it with bluetooth!");
 }
-std::vector<uint8_t> buffer(SERIAL_SIZE_RX * 10);
+std::vector<uint8_t> buffer(SERIAL_SIZE_RX * 20);
 int tryCount = 0;
 void loop()
 {
     if (SerialBT.hasClient())
     {
         const size_t bufferSize = buffer.size();
-        if (bufferSize >= SERIAL_SIZE_RX * 5 || tryCount > 10)
+        if (bufferSize >= SERIAL_SIZE_RX * 10 || (bufferSize > 0 && tryCount > 10))
         {
             log_d("BufferSize = %lu, tryCount = %d", bufferSize, tryCount);
             int partSize = bufferSize - SerialBT.write(buffer.data(), bufferSize);
@@ -80,7 +80,7 @@ void loop()
                 buffer.clear();
             }
             else {
-                log_d("BT Buffer overflow = %lu, tryCount = %d", partSize, tryCount);
+                log_d("WARN BT Buffer overflow = %lu, tryCount = %d", partSize, tryCount);
                 std::vector<uint8_t> bufferOld(partSize);
                 const size_t oldBufferSize = buffer.size();
                 for (int i = bufferSize-1; i < oldBufferSize + bufferSize; i++)
@@ -93,13 +93,14 @@ void loop()
                     buffer.push_back(bufferOld[i]);
                 }
             }
-            delay(10);
+            delay(20);
         }
         else
         {
             if (bufferSize > 0)
             {
                 tryCount++;
+                SerialBT.flush();
             }
         }
 
