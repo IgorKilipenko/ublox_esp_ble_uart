@@ -6,7 +6,12 @@
 /* Serial */
 #define BAUD_SERIAL 115200 // Debug Serial baund rate
 #define BAUND_RECEIVER 0   // Auto detect baud //921600 // GPS receiver baund rate
-#define SERIAL_SIZE_RX 1024
+//#define SERIAL_SIZE_RX 1024
+#ifndef SERIAL_SIZE_RX
+//static const uint8_t SERIAL_SIZE_RX = uint8_t(112);
+#define SERIAL_SIZE_RX 112U // MAX BUFFER = 112
+#endif // SERIAL_SIZE_RX
+
 /* SD card */
 #ifdef ESP32
 #ifdef TTGO_BOARD
