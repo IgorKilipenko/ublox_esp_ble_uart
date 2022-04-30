@@ -65,7 +65,7 @@ void setup()
     Serial.println("The device started, now you can pair it with bluetooth!");
 }
 
-const size_t MAX_BUFFER_SIZE = 1024*3;
+const size_t MAX_BUFFER_SIZE = 1024 * 3;
 std::vector<uint8_t> buffer(MAX_BUFFER_SIZE * 2);
 int tryCount = 0;
 
@@ -76,15 +76,17 @@ void loop()
         const size_t bufferSize = buffer.size();
         if ((bufferSize >= MAX_BUFFER_SIZE - SERIAL_SIZE_RX) || (bufferSize > 0 && tryCount > 100))
         {
-            //log_d("BufferSize = %lu, tryCount = %d", bufferSize, tryCount);
+            // log_d("BufferSize = %lu, tryCount = %d", bufferSize, tryCount);
             const size_t writeCount = SerialBT.write(buffer.data(), bufferSize);
             log_d("Write %lu bytes from %lu", writeCount, bufferSize);
             int partSize = bufferSize - writeCount;
-            if (partSize <= 0) {
+            if (partSize <= 0)
+            {
                 tryCount = 0;
                 buffer.clear();
             }
-            else {
+            else
+            {
                 log_d("WARN BT Buffer overflow = %lu, tryCount = %d", partSize, tryCount);
                 std::vector<uint8_t> bufferOld(partSize);
                 for (int i = partSize - 1; i < bufferSize; i++)
@@ -99,10 +101,13 @@ void loop()
                     buffer.push_back(bufferOld[i]);
                 }
             }
-            if (writeCount >= MAX_BUFFER_SIZE  - SERIAL_SIZE_RX) {
+            if (writeCount >= MAX_BUFFER_SIZE - SERIAL_SIZE_RX)
+            {
                 delay(10);
                 SerialBT.flush();
-            }else {
+            }
+            else
+            {
                 delay(1);
             }
         }
@@ -115,21 +120,33 @@ void loop()
             }
         }
 
-        const int len = Receiver->available();
-        if (len)
+        const int outLen = Receiver->available();
+        if (outLen)
         {
             // SerialBT.write(Serial.read());
-            uint8_t bytes[len];
-            const size_t sizeRes = Receiver->readBytes(bytes, len);
+            uint8_t bytes[outLen];
+            const size_t sizeRes = Receiver->readBytes(bytes, outLen);
             for (int i = 0; i < sizeRes; i++)
             {
                 buffer.push_back(bytes[i]);
             }
         }
-        if (SerialBT.available())
+
+        const int inLen = SerialBT.available();
+        if (inLen)
         {
-            Serial.write(SerialBT.read());
-            delay(10);
+            // Serial.write(SerialBT.read());
+            uint8_t bytes[inLen];
+            const size_t sizeRes = SerialBT.readBytes(bytes, inLen);
+            const size_t writeCount = Receiver->write(bytes, inLen);
+            if (writeCount > 0)
+            {
+                delay(10);
+            }
+            else
+            {
+                delay(1);
+            }
         }
     }
     else
