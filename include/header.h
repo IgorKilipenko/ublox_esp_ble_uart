@@ -12,6 +12,12 @@
 #define SERIAL_SIZE_RX 112U // MAX BUFFER = 112
 #endif // SERIAL_SIZE_RX
 
+#ifndef CONFIG_RX_BUFFER_SIZE
+#define RX_BUFFER_SIZE 1024 * 4
+#else
+#define RX_BUFFER_SIZE CONFIG_MAX_RX_BUFFER_SIZE
+#endif // SERIAL_SIZE_RX
+
 /* SD card */
 #ifdef ESP32
 #ifdef TTGO_BOARD

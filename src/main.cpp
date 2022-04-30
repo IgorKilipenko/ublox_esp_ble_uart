@@ -37,8 +37,7 @@ const std::vector<uint8_t> readReceiverData()
 
 BluetoothSerial SerialBT;
 
-const size_t MAX_BUFFER_SIZE = 1024 * 1;
-std::vector<uint8_t> buffer(MAX_BUFFER_SIZE * 2);
+std::vector<uint8_t> buffer(RX_BUFFER_SIZE * 2);
 int tryCount = 0;
 
 void receiveFnc()
@@ -92,19 +91,6 @@ void onGnssReceiveCb()
     const int len = Receiver->available();
     if (len)
     {
-        // uint8_t bytes[len];
-        // const size_t readSize = Receiver->readBytes(bytes, len);
-
-        // const size_t writeCount = SerialBT.write(bytes, readSize);
-        // log_d("[ %lu ] bytes from GNSS[incom : %lu bytes] sent to BT SERIAL.\n", writeCount, len);
-        // delay(1);
-
-        /*while(Receiver->available()) SerialBT.write(Receiver->read());
-        delay(10);*/
-        /*for (int i = 0; i < readSize; i++){
-            buffer.push_back(bytes[i]);
-        }*/
-
         while (Receiver->available())
             buffer.push_back(Receiver->read());
     }
@@ -112,19 +98,6 @@ void onGnssReceiveCb()
 
 void onRtcmReceiveCb()
 {
-    /*if (!SerialBT.hasClient())
-    {
-        return;
-    }
-
-    const int len = RTCM->available();
-    if (len)
-    {
-        uint8_t bytes[len];
-        const size_t readSize = RTCM->readBytes(bytes, len);
-        const size_t writeCount = SerialBT.write(bytes, readSize);
-        log_d("[ %lu ] bytes from RTCM[incom : %lu bytes] sent to BT SERIAL.\n", writeCount, len);
-    }*/
 }
 
 void setup()
@@ -134,7 +107,7 @@ void setup()
     SerialBT.begin("ESP32test"); // Bluetooth device name
     Serial.println("The device started, now you can pair it with bluetooth!");
 
-    Receiver->setRxBufferSize(1024 * 4);
+    Receiver->setRxBufferSize(RX_BUFFER_SIZE);
     Receiver->onReceive(onGnssReceiveCb, true);
     Receiver->onReceiveError(receiveErrorFnc);
     // Receiver->setRxTimeout(1);
@@ -149,20 +122,8 @@ void setup()
         log_w("Receiver baudrate not detected");
         Receiver->begin(BAUD_SERIAL, SERIAL_8N1, RXD2, TXD2 /*, false, 20000UL, SERIAL_SIZE_RX*/);
     }
-    // Receiver->setHwFlowCtrlMode((uint8_t)3U, SERIAL_SIZE_RX);
 
     RTCM->begin(38400, SERIAL_8N1, RXD1, TXD1);
-
-    // Receiver->setRxBufferSize(SERIAL_SIZE_RX);
-
-    /*if (Receiver != NULL)
-    {
-        Receiver->onReceive(onGnssReceiveCb, true);
-    }
-    if (RTCM != NULL)
-    {
-        RTCM->onReceive(onRtcmReceiveCb, true);
-    }*/
 }
 
 void loop()
@@ -172,32 +133,18 @@ void loop()
         const size_t bufferSize = buffer.size();
         if (bufferSize > 0)
         {
-            // log_d("BufferSize = %lu, tryCount = %d", bufferSize, tryCount);
-            const size_t writeCount = SerialBT.write(buffer.data(), min(bufferSize, (size_t)1024 * 2 * 8));
+            const size_t writeCount = SerialBT.write(buffer.data(), min(bufferSize, (size_t)RX_BUFFER_SIZE * 4));
             log_d("Write %lu bytes from %lu", writeCount, bufferSize);
             int partSize = bufferSize - writeCount;
             if (partSize > 0)
             {
                 log_w("WARN BT Buffer overflow = %lu, Total buffer size = %lu\n", partSize, bufferSize);
-                /*std::vector<uint8_t> bufferOld(partSize);
-                for (int i = partSize - 1; i < bufferSize; i++)
-                {
-                    bufferOld.push_back(buffer[i]);
-                }
-
-                buffer.clear();
-                const size_t oldBufferSize = bufferOld.size();
-                for (int i = 0; i < oldBufferSize; i++)
-                {
-                    buffer.push_back(bufferOld[i]);
-                }*/
             }
 
             tryCount = 0;
             buffer.clear();
 
-            
-            if (writeCount >= MAX_BUFFER_SIZE * 8)
+            if (writeCount >= RX_BUFFER_SIZE * 2)
             {
                 delay(10);
                 SerialBT.flush();
@@ -219,7 +166,6 @@ void loop()
         const int inLen = SerialBT.available();
         if (inLen)
         {
-            // Serial.write(SerialBT.read());
             uint8_t bytes[inLen];
             const size_t sizeRes = SerialBT.readBytes(bytes, inLen);
             const size_t writeCount = Receiver->write(bytes, inLen);
