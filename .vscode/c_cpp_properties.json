@@ -10,7 +10,6 @@
             "includePath": [
                 "g:/__GitHub__/ESP/esp_ble/include",
                 "g:/__GitHub__/ESP/esp_ble/src",
-                "g:/__GitHub__/ESP/esp_ble/lib/Queue/src",
                 "C:/Users/Igor/.platformio/packages/framework-arduinoespressif32/libraries/BluetoothSerial/src",
                 "C:/Users/Igor/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/config",
                 "C:/Users/Igor/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/newlib/platform_include",
@@ -188,6 +187,7 @@
                 "C:/Users/Igor/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/qspi_qspi/include",
                 "C:/Users/Igor/.platformio/packages/framework-arduinoespressif32/cores/esp32",
                 "C:/Users/Igor/.platformio/packages/framework-arduinoespressif32/variants/ttgo-lora32-v21new",
+                "g:/__GitHub__/ESP/esp_ble/lib/Queue/src",
                 "C:/Users/Igor/.platformio/lib/AsyncTCP_ID1826/src",
                 "C:/Users/Igor/.platformio/lib/ESP Async WebServer_ID306/src",
                 "C:/Users/Igor/.platformio/packages/framework-arduinoespressif32/libraries/ArduinoOTA/src",
@@ -229,7 +229,6 @@
                 "path": [
                     "g:/__GitHub__/ESP/esp_ble/include",
                     "g:/__GitHub__/ESP/esp_ble/src",
-                    "g:/__GitHub__/ESP/esp_ble/lib/Queue/src",
                     "C:/Users/Igor/.platformio/packages/framework-arduinoespressif32/libraries/BluetoothSerial/src",
                     "C:/Users/Igor/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/config",
                     "C:/Users/Igor/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/newlib/platform_include",
@@ -407,6 +406,7 @@
                     "C:/Users/Igor/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/qspi_qspi/include",
                     "C:/Users/Igor/.platformio/packages/framework-arduinoespressif32/cores/esp32",
                     "C:/Users/Igor/.platformio/packages/framework-arduinoespressif32/variants/ttgo-lora32-v21new",
+                    "g:/__GitHub__/ESP/esp_ble/lib/Queue/src",
                     "C:/Users/Igor/.platformio/lib/AsyncTCP_ID1826/src",
                     "C:/Users/Igor/.platformio/lib/ESP Async WebServer_ID306/src",
                     "C:/Users/Igor/.platformio/packages/framework-arduinoespressif32/libraries/ArduinoOTA/src",
