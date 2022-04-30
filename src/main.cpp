@@ -38,6 +38,10 @@ const std::vector<uint8_t> readReceiverData()
 
 BluetoothSerial SerialBT;
 
+const size_t MAX_BUFFER_SIZE = 1024 * 1;
+std::vector<uint8_t> buffer(MAX_BUFFER_SIZE * 2);
+int tryCount = 0;
+
 void receiveFnc() {
     log_d("Received UART Data. Available For Reading = %u\n", Receiver->available());
     while(Receiver->available()) Receiver->read(); // Discard received data.
@@ -45,15 +49,18 @@ void receiveFnc() {
 
 void receiveErrorFnc(hardwareSerial_error_t error){
     log_e("UART Reception Error: ");
+    bool bufferOverflow = false;
     switch(error) {
         case UART_BREAK_ERROR:
             log_e("UART_BREAK_ERROR\n");
             break;
         case UART_BUFFER_FULL_ERROR:
             log_e("UART_BUFFER_FULL_ERROR\n");
+            bufferOverflow = true;
             break;
         case UART_FIFO_OVF_ERROR:
             log_e("UART_FIFO_OVF_ERROR\n");
+            bufferOverflow = true;
             break;
         case UART_FRAME_ERROR:
             log_e("UART_FRAME_ERROR\n");
@@ -62,11 +69,15 @@ void receiveErrorFnc(hardwareSerial_error_t error){
             log_e("UART_PARITY_ERROR\n");
             break;
     }
+    if (bufferOverflow) {
+        log_w("Clear buffers");
+        while(Receiver->available()) Receiver->read();
+        buffer.clear();
+    }
+    
 }
 
-const size_t MAX_BUFFER_SIZE = 1024 * 2;
-std::vector<uint8_t> buffer(MAX_BUFFER_SIZE * 2);
-int tryCount = 0;
+
 
 void onGnssReceiveCb()
 {
@@ -158,7 +169,7 @@ void loop()
     if (SerialBT.hasClient())
     {
         const size_t bufferSize = buffer.size();
-        if ((bufferSize >= MAX_BUFFER_SIZE - SERIAL_SIZE_RX) || (bufferSize > 0 && tryCount > 100))
+        if ((bufferSize >= MAX_BUFFER_SIZE - SERIAL_SIZE_RX) || (bufferSize > 0 && tryCount > 10))
         {
             // log_d("BufferSize = %lu, tryCount = %d", bufferSize, tryCount);
             const size_t writeCount = SerialBT.write(buffer.data(), bufferSize);
