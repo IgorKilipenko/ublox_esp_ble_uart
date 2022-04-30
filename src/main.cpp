@@ -1,15 +1,11 @@
 //#include <Arduino.h>
 #include <header.h>
-#include "Queue.h"
+#include <queue>
 #include "BluetoothSerial.h"
 
 HardwareSerial *RTCM{&Serial1};
 HardwareSerial *Receiver{&Serial2};
 
-std::thread receiverThread;
-
-using UartBuffer = Queue<std::vector<uint8_t>>;
-// UartBuffer queue_buffer{500};
 
 const std::vector<uint8_t> readReceiverData()
 {
@@ -120,10 +116,10 @@ void setup()
 {
     Serial.begin(BAUD_SERIAL);
 
-    Receiver->setRxBufferSize(1024*2);
+    Receiver->setRxBufferSize(1024*4);
     Receiver->onReceive(onGnssReceiveCb, true); 
     Receiver->onReceiveError(receiveErrorFnc);
-    Receiver->setRxTimeout(1);
+    //Receiver->setRxTimeout(1);
 
     Receiver->begin(BAUND_RECEIVER, SERIAL_8N1, RXD2, TXD2/*, false, 20000UL, static_cast<uint8_t>(SERIAL_SIZE_RX)*/);
     //delay(500);
