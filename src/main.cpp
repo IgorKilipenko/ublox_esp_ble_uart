@@ -88,8 +88,7 @@ void onGnssReceiveCb()
             Receiver->read();
         return;
     }
-    const int len = Receiver->available();
-    if (len)
+    if (Receiver->available())
     {
         while (Receiver->available())
             buffer.push_back(Receiver->read());
@@ -98,6 +97,18 @@ void onGnssReceiveCb()
 
 void onRtcmReceiveCb()
 {
+    if (!SerialBT.hasClient())
+    {
+        while (RTCM->available())
+            Receiver->read();
+        return;
+    }
+    /*const int len = RTCM->available();
+    if (len)
+    {
+        while (RTCM->available())
+            buffer.push_back(RTCM->read());
+    }*/
 }
 
 void setup()
@@ -108,7 +119,7 @@ void setup()
     Serial.println("The device started, now you can pair it with bluetooth!");
 
     Receiver->setRxBufferSize(RX_BUFFER_SIZE);
-    Receiver->onReceive(onGnssReceiveCb, true);
+    Receiver->onReceive(onGnssReceiveCb, false);
     Receiver->onReceiveError(receiveErrorFnc);
     // Receiver->setRxTimeout(1);
 
@@ -123,6 +134,10 @@ void setup()
         Receiver->begin(BAUD_SERIAL, SERIAL_8N1, RXD2, TXD2 /*, false, 20000UL, SERIAL_SIZE_RX*/);
     }
 
+    RTCM->setRxBufferSize(RX_BUFFER_SIZE);
+    RTCM->onReceive(onRtcmReceiveCb, false);
+    RTCM->onReceiveError(receiveErrorFnc);
+
     RTCM->begin(38400, SERIAL_8N1, RXD1, TXD1);
 }
 
@@ -131,7 +146,7 @@ void loop()
     if (SerialBT.hasClient())
     {
         const size_t bufferSize = buffer.size();
-        if (bufferSize > 0)
+        if (bufferSize >= RX_BUFFER_SIZE || (bufferSize > 0 && tryCount > 3))
         {
             const size_t writeCount = SerialBT.write(buffer.data(), min(bufferSize, (size_t)RX_BUFFER_SIZE * 4));
             log_d("Write %lu bytes from %lu", writeCount, bufferSize);
