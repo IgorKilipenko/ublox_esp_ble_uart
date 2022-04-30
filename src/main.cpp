@@ -65,7 +65,7 @@ void setup()
     Serial.println("The device started, now you can pair it with bluetooth!");
 }
 
-const size_t MAX_BUFFER_SIZE = 1024*2;
+const size_t MAX_BUFFER_SIZE = 1024*3;
 std::vector<uint8_t> buffer(MAX_BUFFER_SIZE * 2);
 int tryCount = 0;
 
@@ -74,10 +74,12 @@ void loop()
     if (SerialBT.hasClient())
     {
         const size_t bufferSize = buffer.size();
-        if ((bufferSize >= MAX_BUFFER_SIZE - SERIAL_SIZE_RX) || (bufferSize > 0 && tryCount > 10))
+        if ((bufferSize >= MAX_BUFFER_SIZE - SERIAL_SIZE_RX) || (bufferSize > 0 && tryCount > 100))
         {
-            log_d("BufferSize = %lu, tryCount = %d", bufferSize, tryCount);
-            int partSize = bufferSize - min(SerialBT.write(buffer.data(), bufferSize), MAX_BUFFER_SIZE);
+            //log_d("BufferSize = %lu, tryCount = %d", bufferSize, tryCount);
+            const size_t writeCount = SerialBT.write(buffer.data(), bufferSize);
+            log_d("Write %lu bytes from %lu", writeCount, bufferSize);
+            int partSize = bufferSize - writeCount;
             if (partSize <= 0) {
                 tryCount = 0;
                 buffer.clear();
@@ -85,18 +87,24 @@ void loop()
             else {
                 log_d("WARN BT Buffer overflow = %lu, tryCount = %d", partSize, tryCount);
                 std::vector<uint8_t> bufferOld(partSize);
-                const size_t oldBufferSize = buffer.size();
-                for (int i = bufferSize-1; i < oldBufferSize + bufferSize; i++)
+                for (int i = partSize - 1; i < bufferSize; i++)
                 {
                     bufferOld.push_back(buffer[i]);
                 }
 
                 buffer.clear();
-                for (int i=0; i < oldBufferSize; i++) {
+                const size_t oldBufferSize = bufferOld.size();
+                for (int i = 0; i < oldBufferSize; i++)
+                {
                     buffer.push_back(bufferOld[i]);
                 }
             }
-            delay(20);
+            if (writeCount >= MAX_BUFFER_SIZE  - SERIAL_SIZE_RX) {
+                delay(10);
+                SerialBT.flush();
+            }else {
+                delay(1);
+            }
         }
         else
         {
